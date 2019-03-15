@@ -14,6 +14,7 @@ class UserViewController: UIViewController{
     @IBOutlet var playButton: UIButton!
     
     override func viewDidLoad(){
+        textField.text = ""
         super.viewDidLoad()
         
         playButton.layer.cornerRadius = 5

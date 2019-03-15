@@ -47,7 +47,10 @@ class ViewController: UIViewController {
     
     //database pointers
     var db:OpaquePointer? = nil
+    var db2: OpaquePointer? = nil
     var statement: OpaquePointer?
+    var statement2: OpaquePointer?
+    var statement3: OpaquePointer?
     
     var dropTimer: Timer!
     var pause: Bool = false
@@ -59,10 +62,12 @@ class ViewController: UIViewController {
     var queryWordFound: String!
     
     //dictionary db file location
-    let databaseInMainBundleURL = Bundle.main.url(forResource: "Dictionary", withExtension: "db")!
+    let databaseInMainBundleURL = Bundle.main.url(forResource: "finalDictionary", withExtension: "db")!
+    let databaseInMainBundleURL2 = Bundle.main.url(forResource: "Dictionary", withExtension: "db")!
     
     //finalDatabaseURL is used to reference db
     var finalDatabaseUrl: URL!
+    var finalDatabaseUrl2: URL!
     
     //to store score, words, level, initialize to 0
     var score: Int = 0
@@ -88,12 +93,18 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        print("username is \(userName)")
         
         if(userName == ""){
-            //print("Emptry user")
             userName = "quickPlay"
         }
+        if(userName == " "){
+            userName = "quickPlay"
+        }
+        
+        //print("username is \(userName)")
+        
+        //print("username after trim\(userName)")
+        
         //when first launched, query username in db to see if it exists
         //if not in db, create a new record, score will be updated after each level is
         //completed, along with words found
@@ -187,10 +198,18 @@ class ViewController: UIViewController {
         goalLabel.layer.zPosition = -1
         okButton.layer.zPosition = 1
         
+        copyDatabaseIfNeeded("finalDictionary")
         copyDatabaseIfNeeded("Dictionary")
         
         // open database
         if sqlite3_open(finalDatabaseUrl.path, &db) != SQLITE_OK {
+            //debugLabel.text = "error opening db"
+        }
+        else{
+            //debugLabel.text = "db open"
+        }
+        
+        if sqlite3_open(finalDatabaseUrl2.path, &db2) != SQLITE_OK {
             //debugLabel.text = "error opening db"
         }
         else{
@@ -204,64 +223,59 @@ class ViewController: UIViewController {
     
     func insertUserInDB(){
         
-        DispatchQueue.global(qos: .background).async {
-            
             var queryStatement = ""
             
-            queryStatement = "SELECT * FROM userScore WHERE username like ?;"
+            queryStatement = "SELECT * FROM userScore WHERE username = ?;"
         
-            self.statement = nil
-            
-            if (sqlite3_prepare_v2(self.db,queryStatement,-1,&self.statement,nil) == SQLITE_OK){
+            self.statement2 = nil
+        
+            if (sqlite3_prepare_v2(self.db,queryStatement,-1,&self.statement2,nil) == SQLITE_OK)
+            {
                 //print("SQLITE OK checking username")
-            }
-            
-            sqlite3_bind_text(self.statement,1,self.userName,-1,nil)
-            
-            if(sqlite3_step(self.statement) == SQLITE_ROW){
-                print("select user from db to see if it exists")
+                sqlite3_bind_text(self.statement2,1,userName,-1,nil)
                 
-                let score = sqlite3_column_int(self.statement,2)
-                self.prevHighScore = score
-                //print("prev high score: \(self.prevHighScore)")
-                sqlite3_finalize(self.statement)
-            }else{
-                
-                sqlite3_finalize(self.statement)
-                
-                print("NO RETURNED RESULTS username")
-                
-                var queryStatement = ""
-                
-                //since user is not in db, add it to db
-                queryStatement = "INSERT INTO userScore(username,score) VALUES(?,0);"
-                
-                self.statement = nil
-                
-                if (sqlite3_prepare_v2(self.db,queryStatement,-1,&self.statement,nil) == SQLITE_OK){
-                    //print("SQLITE OK INSERTING username")
+                if(sqlite3_step(self.statement2) == SQLITE_ROW){
+                    //print("select user from db to see if it exists")
+                    
+                    let score = sqlite3_column_int(self.statement2,1)
+                    self.prevHighScore = score
+                    //print("prev high score: \(self.prevHighScore)")
+                    //sqlite3_finalize(self.statement)
+                }else{
+                    //print("user not exists, enter into db")
+                    
+                    sqlite3_reset(self.statement2)
+                    sqlite3_finalize(self.statement2)
+                    
+                    //print("NO RETURNED RESULTS username")
+                    
+                    var queryStatement = ""
+                    
+                    //since user is not in db, add it to db
+                    queryStatement = "INSERT INTO userScore(username,score) VALUES(?,0);"
+                    
+                    self.statement2 = nil
+                    
+                    if (sqlite3_prepare_v2(self.db,queryStatement,-1,&self.statement2,nil) == SQLITE_OK){
+                        //print("SQLITE OK INSERTING username")
+                        sqlite3_bind_text(self.statement2,1,userName,-1,nil)
+                        
+                        if(sqlite3_step(self.statement2) == SQLITE_DONE){
+                            //print("sqlite done inserting username")
+                            //sqlite3_finalize(self.statement)
+                        }
+                        else{
+                            //print("Trouble inserting user")
+                            //sqlite3_finalize(self.statement)
+                        }
+                        sqlite3_reset(self.statement2)
+
+                    }
+                    //sqlite3_finalize(self.statement)
                 }
-                
-                sqlite3_bind_text(self.statement,1,self.userName,-1,nil)
-                
-                if(sqlite3_step(self.statement) == SQLITE_DONE){
-                    //print("sqlite done inserting username")
-                    sqlite3_finalize(self.statement)
-                }
-                else{
-                    //print("Trouble inserting user")
-                    sqlite3_finalize(self.statement)
-                }
-                
-                
-                
-                
-            }
-            
-            DispatchQueue.main.async {
-                print("username query find finished")
-            }
+                //sqlite3_finalize(self.statement)
         }
+        sqlite3_finalize(self.statement2)
     }
     
     //handle the screenrotation
@@ -293,6 +307,7 @@ class ViewController: UIViewController {
         
         //close database if moving to another view
         sqlite3_close(db)
+        sqlite3_close(db2)
         
         //switch to main menu view
         performSegue(withIdentifier: "mainMenuSegue", sender: nil)
@@ -547,36 +562,55 @@ class ViewController: UIViewController {
         }
         
         //this will be db url for accessing dictionary database
-        finalDatabaseUrl = documentsUrl.first!.appendingPathComponent("\(database).db")
-        
-        /*
-        //remove database file from path, then recopy the bundles version to make it up to date
-        do {
-            try fileManager.removeItem(atPath: finalDatabaseUrl.path)
-            //print("DB removed from device")
-        } catch let error as NSError {
-            print("error removing db from device:\(error.description)")
-        }
-        
-        finalDatabaseUrl = documentsUrl.first!.appendingPathComponent("\(database).db")
-        */
- 
- 
-        print(finalDatabaseUrl)
-        
-        if !( (try? finalDatabaseUrl.checkResourceIsReachable()) ?? false) {
-            //print("DB does not exist in documents folder")
-            //let databaseInMainBundleURL = Bundle.main.resourceURL?.appendingPathComponent("\(database).db")
-            
+        if(database == "Dictionary"){
+            finalDatabaseUrl2 = documentsUrl.first!.appendingPathComponent("\(database).db")
             do {
-                try fileManager.copyItem(atPath: (databaseInMainBundleURL.path), toPath: finalDatabaseUrl.path)
+                try fileManager.removeItem(atPath: finalDatabaseUrl2.path)
+                //print("DB removed from device")
             } catch let error as NSError {
-                print("Couldn't copy file to final location! Error:\(error.description)")
+                print("error removing db from device:\(error.description)")
             }
             
-        } else {
+            finalDatabaseUrl2 = documentsUrl.first!.appendingPathComponent("\(database).db")
+            
+            if !( (try? finalDatabaseUrl2.checkResourceIsReachable()) ?? false) {
+                //print("DB does not exist in documents folder")
+                //let databaseInMainBundleURL = Bundle.main.resourceURL?.appendingPathComponent("\(database).db")
+                
+                do {
+                    try fileManager.copyItem(atPath: (databaseInMainBundleURL2.path), toPath: finalDatabaseUrl2.path)
+                } catch let _ as NSError {
+                    //print("Couldn't copy file to final location! Error:\(error.description)")
+                }
+                
+            } else {
+                
+            }
+            
             
         }
+        else if(database == "finalDictionary")
+        {
+            finalDatabaseUrl = documentsUrl.first!.appendingPathComponent("\(database).db")
+            if !( (try? finalDatabaseUrl.checkResourceIsReachable()) ?? false) {
+                //print("DB does not exist in documents folder")
+                //let databaseInMainBundleURL = Bundle.main.resourceURL?.appendingPathComponent("\(database).db")
+                
+                do {
+                    try fileManager.copyItem(atPath: (databaseInMainBundleURL.path), toPath: finalDatabaseUrl.path)
+                } catch let error as NSError {
+                    //print("Couldn't copy file to final location! Error:\(error.description)")
+                }
+                
+            } else {
+                
+            }
+            
+        }
+    
+        
+        
+        
     }
     
     func query(word: String) -> Bool{
@@ -613,66 +647,71 @@ class ViewController: UIViewController {
         }
         else if(foundGood == true){
             //assign point stats
-            setScores(word: wordLabel.text!)
+            setScores(wordPassed: word)
             debugLabel.text = word
             self.okButton.isEnabled = true
             return false
         }
         else{
             
+            
             //do not update any UI from main thread, app will throw exception
             //create seperate variables, then do anything after the asynchonous background thread finishes
+            //sqlite3_finalize(self.statement)
             DispatchQueue.global(qos: .background).async {
-                
+                print("This is run on the background queue")
+            
                 var queryStatement = ""
-                
+                self.statement = nil
+                sqlite3_reset(self.statement)
+
+                sqlite3_finalize(self.statement)
+            
+                self.statement = nil
+            
                 //allows for use of wild card character
                 if word.contains("_"){
-                    queryStatement = "SELECT * FROM entries WHERE word like ? COLLATE NOCASE;"
+                    queryStatement = "SELECT word FROM entries WHERE word like ? COLLATE NOCASE;"
                 }
                 else{
-                    queryStatement = "SELECT * FROM entries WHERE word = ? COLLATE NOCASE;"
+                    queryStatement = "SELECT word FROM entries WHERE word = ? COLLATE NOCASE;"
                 }
-                
-                self.statement = nil
-                
-                if (sqlite3_prepare_v2(self.db,queryStatement,-1,&self.statement,nil) == SQLITE_OK){
-                    //print("SQLITE OK")
+                if (sqlite3_prepare_v2(self.db2,queryStatement,-1,&self.statement,nil) == SQLITE_OK){
+                    sqlite3_bind_text(self.statement,1,word,-1,nil)
+                    if(sqlite3_step(self.statement) == SQLITE_ROW){
+                        print("click on queryWord ok butotn")
+                        let queryResult = sqlite3_column_text(self.statement,0)
+                        let wordFound = String(cString: queryResult!)
+                        self.prevGoodWords.append(wordFound)
+                        self.adjustScores = true
+                        self.queryWordFound = wordFound
+                        self.player.allWordsFound.append(wordFound)
+                    }else{
+                        print("NO RETURNED RESULTS")
+                        //self.prevBadWords.append(word)
+                    }
                 }
-                
-                sqlite3_bind_text(self.statement,1,word,-1,nil)
-                
-                if(sqlite3_step(self.statement) == SQLITE_ROW){
-                    //print("sqlite done")
-                    
-                    let queryResult = sqlite3_column_text(self.statement,0)
-                    let wordFound = String(cString: queryResult!)
-                    self.prevGoodWords.append(wordFound)
-                    self.adjustScores = true
-                    self.queryWordFound = wordFound
-                    self.player.allWordsFound.append(wordFound)
-                }else{
-                    //print("NO RETURNED RESULTS")
-                    self.prevBadWords.append(word)
+                else{
+                    print("select could not be prepared")
                 }
-                
-                sqlite3_finalize(self.statement)
                 DispatchQueue.main.async {
+                    print("query thread done")
                     self.okButton.isEnabled = true
                     
                     if(self.adjustScores == true){
-                        self.setScores(word: self.queryWordFound)
+                        self.setScores(wordPassed: self.queryWordFound)
                     }
-                    
                 }
+                sqlite3_finalize(self.statement)
             }
         }
         return true
     }
     
-    func setScores(word: String){
-        debugLabel.text = word
-        let wordLength = word.count
+    func setScores(wordPassed: String){
+        print(wordPassed)
+        debugLabel.text = wordPassed
+        let wordLength = wordPassed.count
         if (wordLength == 1){
             score += 1
             words += 1
@@ -776,81 +815,73 @@ class ViewController: UIViewController {
             
             //only update db if previous high score for the username is lower than current score
             if(score > self.prevHighScore){
-                print("score is bigger than prevScore")
+                //print("score is bigger than prevScore")
             //update db user scores and words after each level is completed
-            DispatchQueue.global(qos: .background).async {
-                
+    
                 var queryStatement = ""
-                
                 queryStatement = "UPDATE userScore SET score = ? WHERE username = ?;"
-                
-                self.statement = nil
-                
-                if (sqlite3_prepare_v2(self.db,queryStatement,-1,&self.statement,nil) == SQLITE_OK){
-                    print("SQLITE OK updating score per level")
-                }
+                self.statement3 = nil
                 
                 
-                sqlite3_bind_int(self.statement, 1, Int32(self.score))
-                sqlite3_bind_text(self.statement,2,self.userName,-1,nil)
-                
-                if(sqlite3_step(self.statement) == SQLITE_DONE){
-                    print("sqlite done in updating username")
-                    sqlite3_finalize(self.statement)
+                if (sqlite3_prepare_v2(self.db,queryStatement,-1,&self.statement3,nil) == SQLITE_OK){
+                    //print("SQLITE OK updating score per level")
                     
-                    //once updating score is done,
-                    //remove all words from userWords and current user and then insert all words
-                    var queryStatement = ""
+                    sqlite3_bind_int(self.statement3, 1, Int32(self.score))
+                    sqlite3_bind_text(self.statement3,2,self.userName,-1,nil)
                     
-                    queryStatement = "delete from userWords where userName = ?;"
-                    
-                    self.statement = nil
-                    
-                    if (sqlite3_prepare_v2(self.db,queryStatement,-1,&self.statement,nil) == SQLITE_OK){
-                        print("SQLITE OK deleting all words for user")
-                    }
-                    
-                    sqlite3_bind_text(self.statement,1,self.userName,-1,nil)
-                    
-                    if(sqlite3_step(self.statement) == SQLITE_DONE){
-                        print("sqlite done removing all words for user")
-                        sqlite3_finalize(self.statement)
+                    if(sqlite3_step(self.statement3) == SQLITE_DONE){
+                        //print("sqlite done in updating username")
                         
-                        //once all prev words removed db, update all words found currently
-                        var i = 0
-                        while(i < self.player.allWordsFound.count){
-                            var queryStatement = ""
+                        //once updating score is done,
+                        //remove all words from userWords and current user and then insert all words
+                        var queryStatement = ""
+                        
+                        queryStatement = "delete from userWords where username = ?;"
+                        
+                        sqlite3_finalize(self.statement3)
+                        
+                        self.statement3 = nil
+                        
+                        if (sqlite3_prepare_v2(self.db,queryStatement,-1,&self.statement3,nil) == SQLITE_OK){
+                            //print("SQLITE OK deleting all words for user")
                             
-                            queryStatement = "INSERT INTO userWords(userName,words) VALUES(?,?);"
+                            sqlite3_bind_text(self.statement3,1,self.userName,-1,nil)
                             
-                            self.statement = nil
-                            
-                            if (sqlite3_prepare_v2(self.db,queryStatement,-1,&self.statement,nil) == SQLITE_OK){
-                                print("SQLITE OK INSERTING WORDS per level")
+                            if(sqlite3_step(self.statement3) == SQLITE_DONE){
+                                // print("sqlite done removing all words for user")
+                                sqlite3_finalize(self.statement3)
+                                
+                                //once all prev words removed db, update all words found currently
+                                var i = 0
+                                while(i < self.player.allWordsFound.count){
+                                    var queryStatement = ""
+                                    
+                                    queryStatement = "INSERT INTO userWords(username,words) VALUES(?,?);"
+                                    
+                                    self.statement3 = nil
+                                    
+                                    if (sqlite3_prepare_v2(self.db,queryStatement,-1,&self.statement3,nil) == SQLITE_OK){
+                                        //print("SQLITE OK INSERTING WORDS per level")
+                                        sqlite3_bind_text(self.statement3,1,self.userName,-1,nil)
+                                        sqlite3_bind_text(self.statement3,2,self.player.allWordsFound[i],-1,nil)
+                                        
+                                        if(sqlite3_step(self.statement3) == SQLITE_DONE){
+                                            //print("sqlite done in inserting words into userWords")
+                                            sqlite3_finalize(self.statement3)
+                                        }
+                                        i += 1
+                                    }
+                                }
+                            }else{
+                                //print("NO deleting possible")
                             }
-                            
-                            sqlite3_bind_text(self.statement,1,self.userName,-1,nil)
-                            sqlite3_bind_text(self.statement,2,self.player.allWordsFound[i],-1,nil)
-                            
-                            if(sqlite3_step(self.statement) == SQLITE_DONE){
-                                print("sqlite done in inserting words into userWords")
-                                sqlite3_finalize(self.statement)
-                            }
-                            i += 1
                         }
                     }else{
-                        sqlite3_finalize(self.statement)
-                        print("NO deleting possible")
+                        //print("NO updating possible")
                     }
-                }else{
-                    sqlite3_finalize(self.statement)
-                    print("NO updating possible")
                 }
             }
-            DispatchQueue.main.async {
-                    print("username query find finished")
-            }
-            }
+            //sqlite3_finalize(self.statement)
             
             player.score = score
             

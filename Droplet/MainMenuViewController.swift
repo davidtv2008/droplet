@@ -11,13 +11,10 @@ import UIKit
 class MainMenuViewController: UIViewController{
     @IBOutlet var playButton: UIButton!
     @IBOutlet var scoresButton: UIButton!
-    
-    //database pointers
-    var db:OpaquePointer? = nil
-    var statement: OpaquePointer?
+   
     
     //dictionary db file location
-    let databaseInMainBundleURL = Bundle.main.url(forResource: "Dictionary", withExtension: "db")!
+    let databaseInMainBundleURL = Bundle.main.url(forResource: "finalDictionary", withExtension: "db")!
     
     //finalDatabaseURL is used to reference db
     var finalDatabaseUrl: URL!
@@ -31,12 +28,10 @@ class MainMenuViewController: UIViewController{
         scoresButton.layer.cornerRadius = 5
         scoresButton.alpha = 0.8
         
-        copyDatabaseIfNeeded("Dictionary")
-        
-        
-        
-        
+        copyDatabaseIfNeeded("finalDictionary")
     }
+    
+   
     
     func copyDatabaseIfNeeded(_ database: String) {
         
@@ -48,8 +43,10 @@ class MainMenuViewController: UIViewController{
             return
         }
         
+        
         //this will be db url for accessing dictionary database
         finalDatabaseUrl = documentsUrl.first!.appendingPathComponent("\(database).db")
+        
         
         /*
         //remove database file from path, then recopy the bundles version to make it up to date
@@ -64,7 +61,7 @@ class MainMenuViewController: UIViewController{
         */
         
         
-        print(finalDatabaseUrl)
+        //print(finalDatabaseUrl)
         
         if !( (try? finalDatabaseUrl.checkResourceIsReachable()) ?? false) {
             //print("DB does not exist in documents folder")
@@ -72,8 +69,8 @@ class MainMenuViewController: UIViewController{
             
             do {
                 try fileManager.copyItem(atPath: (databaseInMainBundleURL!.path), toPath: finalDatabaseUrl.path)
-            } catch let error as NSError {
-                print("Couldn't copy file to final location! Error:\(error.description)")
+            } catch let _ as NSError {
+                //print("Couldn't copy file to final location! Error:\(error.description)")
             }
             
         } else {
@@ -81,10 +78,6 @@ class MainMenuViewController: UIViewController{
         }
     }
     
-    func goToScoresView() {
-        
-        self.performSegue(withIdentifier: "scoresSegue", sender: self)
-        
-    }
+    
     
 }
