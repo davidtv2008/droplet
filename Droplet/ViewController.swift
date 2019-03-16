@@ -8,6 +8,9 @@
 
 import UIKit
 import SQLite3
+import AVFoundation
+
+
 
 class ViewController: UIViewController {
     
@@ -34,6 +37,12 @@ class ViewController: UIViewController {
     
     
     var completed = false
+    
+    //variable for playing sound effect
+    var audioPlayer = AVAudioPlayer()
+    var audioPlayer2 = AVAudioPlayer()
+    var audioPlayer3 = AVAudioPlayer()
+    
     
 
     //get the screen height to use to know when to delete buttons
@@ -99,6 +108,34 @@ class ViewController: UIViewController {
         }
         if(userName == " "){
             userName = "quickPlay"
+        }
+        
+        
+        let soundTap = Bundle.main.path(forResource: "tapSound", ofType: "mp3")
+        
+        do{
+            audioPlayer = try AVAudioPlayer(contentsOf: URL(fileURLWithPath: soundTap!))
+        }
+        catch{
+            print(error)
+        }
+        
+        let soundCorrect = Bundle.main.path(forResource: "correctSound", ofType: "mp3")
+        
+        do{
+            audioPlayer2 = try AVAudioPlayer(contentsOf: URL(fileURLWithPath: soundCorrect!))
+        }
+        catch{
+            print(error)
+        }
+        
+        let wrongCorrect = Bundle.main.path(forResource: "wrongSound", ofType: "mp3")
+        
+        do{
+            audioPlayer3 = try AVAudioPlayer(contentsOf: URL(fileURLWithPath: wrongCorrect!))
+        }
+        catch{
+            print(error)
         }
         
         //print("username is \(userName)")
@@ -542,6 +579,8 @@ class ViewController: UIViewController {
     
     @objc func formWord(_ sender: UIButton) {
         
+        audioPlayer.play()
+        
         let letter = sender.titleLabel!.text
         let appendString = wordLabel.text! + letter!
         
@@ -642,11 +681,13 @@ class ViewController: UIViewController {
             return false
         }
         else if(foundBad == true){
+            audioPlayer3.play()
             self.okButton.isEnabled = true
             return false
         }
         else if(foundGood == true){
             //assign point stats
+            audioPlayer2.play()
             setScores(wordPassed: word)
             debugLabel.text = word
             self.okButton.isEnabled = true
@@ -679,6 +720,7 @@ class ViewController: UIViewController {
                 if (sqlite3_prepare_v2(self.db2,queryStatement,-1,&self.statement,nil) == SQLITE_OK){
                     sqlite3_bind_text(self.statement,1,word,-1,nil)
                     if(sqlite3_step(self.statement) == SQLITE_ROW){
+                        self.audioPlayer2.play()
                         print("click on queryWord ok butotn")
                         let queryResult = sqlite3_column_text(self.statement,0)
                         let wordFound = String(cString: queryResult!)
@@ -687,6 +729,7 @@ class ViewController: UIViewController {
                         self.queryWordFound = wordFound
                         self.player.allWordsFound.append(wordFound)
                     }else{
+                        self.audioPlayer3.play()
                         print("NO RETURNED RESULTS")
                         //self.prevBadWords.append(word)
                     }

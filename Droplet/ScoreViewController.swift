@@ -8,6 +8,8 @@
 
 import UIKit
 import SQLite3
+import AVFoundation
+
 
 
 class ScoreViewController: UITableViewController{
@@ -17,6 +19,10 @@ class ScoreViewController: UITableViewController{
     var scores: [String] = []
     var index: Int = 0
     var tableCalls: Int = 0
+    
+    //variable for playing sound effect
+    var audioPlayer = AVAudioPlayer()
+    
     
     //database pointers
     var db:OpaquePointer? = nil
@@ -32,6 +38,17 @@ class ScoreViewController: UITableViewController{
         let insets = UIEdgeInsets(top: statusBarHeight, left: 0, bottom: 0, right: 0)
         tableView.contentInset = insets
         tableView.scrollIndicatorInsets = insets
+        
+        
+        let soundTap = Bundle.main.path(forResource: "tapSound", ofType: "mp3")
+        
+        do{
+            audioPlayer = try AVAudioPlayer(contentsOf: URL(fileURLWithPath: soundTap!))
+        }
+        catch{
+            print(error)
+        }
+        
         
         //get users local device file path url
         let fileManager = FileManager.default

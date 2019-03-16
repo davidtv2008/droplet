@@ -8,6 +8,10 @@
 
 /* Begin PBXBuildFile section */
 		C600474A223C692800369508 /* finalDictionary.db in Resources */ = {isa = PBXBuildFile; fileRef = C6004749223C692800369508 /* finalDictionary.db */; };
+		C600474C223CB5E600369508 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C600474B223CB5E600369508 /* AVFoundation.framework */; };
+		C600474E223CC58600369508 /* tapSound.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = C600474D223CC58600369508 /* tapSound.mp3 */; };
+		C6004750223CC7AB00369508 /* correctSound.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = C600474F223CC7AB00369508 /* correctSound.mp3 */; };
+		C6004752223CCA5E00369508 /* wrongSound.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = C6004751223CCA5E00369508 /* wrongSound.mp3 */; };
 		C6205ADF222D0C10000364E8 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C6205ADE222D0C10000364E8 /* Assets.xcassets */; };
 		C627D9562237894A006CE4B1 /* ScoreViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C627D9552237894A006CE4B1 /* ScoreViewController.swift */; };
 		C627D958223832C4006CE4B1 /* MainMenuViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C627D957223832C4006CE4B1 /* MainMenuViewController.swift */; };
@@ -44,6 +48,10 @@
 
 /* Begin PBXFileReference section */
 		C6004749223C692800369508 /* finalDictionary.db */ = {isa = PBXFileReference; lastKnownFileType = file; path = finalDictionary.db; sourceTree = "<group>"; };
+		C600474B223CB5E600369508 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
+		C600474D223CC58600369508 /* tapSound.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = tapSound.mp3; sourceTree = "<group>"; };
+		C600474F223CC7AB00369508 /* correctSound.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = correctSound.mp3; sourceTree = "<group>"; };
+		C6004751223CCA5E00369508 /* wrongSound.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = wrongSound.mp3; sourceTree = "<group>"; };
 		C6205ADE222D0C10000364E8 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		C627D9552237894A006CE4B1 /* ScoreViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScoreViewController.swift; sourceTree = "<group>"; };
 		C627D957223832C4006CE4B1 /* MainMenuViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainMenuViewController.swift; sourceTree = "<group>"; };
@@ -72,6 +80,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C600474C223CB5E600369508 /* AVFoundation.framework in Frameworks */,
 				C628E8BC2228A7FB000A3FCE /* libsqlite3.tbd in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -119,7 +128,10 @@
 			children = (
 				C6205ADE222D0C10000364E8 /* Assets.xcassets */,
 				C628E8902228A7E2000A3FCE /* Main.storyboard */,
+				C6004751223CCA5E00369508 /* wrongSound.mp3 */,
 				C6AA9089223B96120032EBA8 /* Dictionary.db */,
+				C600474F223CC7AB00369508 /* correctSound.mp3 */,
+				C600474D223CC58600369508 /* tapSound.mp3 */,
 				C627D95F2238DE4F006CE4B1 /* UserViewController.swift */,
 				C628E8952228A7E4000A3FCE /* LaunchScreen.storyboard */,
 				C6004749223C692800369508 /* finalDictionary.db */,
@@ -156,6 +168,7 @@
 		C628E8BA2228A7FA000A3FCE /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				C600474B223CB5E600369508 /* AVFoundation.framework */,
 				C628E8BB2228A7FB000A3FCE /* libsqlite3.tbd */,
 			);
 			name = Frameworks;
@@ -265,8 +278,11 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C6004750223CC7AB00369508 /* correctSound.mp3 in Resources */,
 				C6AA908A223B96120032EBA8 /* Dictionary.db in Resources */,
+				C6004752223CCA5E00369508 /* wrongSound.mp3 in Resources */,
 				C600474A223C692800369508 /* finalDictionary.db in Resources */,
+				C600474E223CC58600369508 /* tapSound.mp3 in Resources */,
 				C628E8972228A7E4000A3FCE /* LaunchScreen.storyboard in Resources */,
 				C628E8922228A7E2000A3FCE /* Main.storyboard in Resources */,
 				C6205ADF222D0C10000364E8 /* Assets.xcassets in Resources */,

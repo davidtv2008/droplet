@@ -7,11 +7,16 @@
 //
 
 import UIKit
+import AVFoundation
 
 class MainMenuViewController: UIViewController{
     @IBOutlet var playButton: UIButton!
     @IBOutlet var scoresButton: UIButton!
-   
+    
+    //variable for playing sound effect
+    var audioPlayer = AVAudioPlayer()
+    
+
     
     //dictionary db file location
     let databaseInMainBundleURL = Bundle.main.url(forResource: "finalDictionary", withExtension: "db")!
@@ -27,6 +32,15 @@ class MainMenuViewController: UIViewController{
         playButton.alpha = 0.8
         scoresButton.layer.cornerRadius = 5
         scoresButton.alpha = 0.8
+        
+        let soundTap = Bundle.main.path(forResource: "tapSound", ofType: "mp3")
+        
+        do{
+            audioPlayer = try AVAudioPlayer(contentsOf: URL(fileURLWithPath: soundTap!))
+        }
+        catch{
+            print(error)
+        }
         
         copyDatabaseIfNeeded("finalDictionary")
     }
@@ -58,8 +72,8 @@ class MainMenuViewController: UIViewController{
         }
         
         finalDatabaseUrl = documentsUrl.first!.appendingPathComponent("\(database).db")
-        */
         
+        */
         
         //print(finalDatabaseUrl)
         

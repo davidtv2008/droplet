@@ -7,15 +7,31 @@
 //
 
 import UIKit
+import AVFoundation
+
+
 
 class UserViewController: UIViewController{
     
     @IBOutlet var textField: UITextField!
     @IBOutlet var playButton: UIButton!
     
+    //variable for playing sound effect
+    var audioPlayer = AVAudioPlayer()
+    
+    
     override func viewDidLoad(){
         textField.text = ""
         super.viewDidLoad()
+        
+        let soundTap = Bundle.main.path(forResource: "tapSound", ofType: "mp3")
+        
+        do{
+            audioPlayer = try AVAudioPlayer(contentsOf: URL(fileURLWithPath: soundTap!))
+        }
+        catch{
+            print(error)
+        }
         
         playButton.layer.cornerRadius = 5
         
